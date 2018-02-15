@@ -56,7 +56,8 @@ be any of the following options: red, crimson, orange, yellow, green,
 blue, indigo, or violet.
 ......................................................................*)
 
-type color_label = NotImplemented ;;
+type color_label = Red | Crimson | Orange | Yellow | Green | 
+    Blue | Indigo | Violet ;;
 
 (* You've just defined a new variant type! But this is an overly
 simplistic representation of colors. Let's make it more usable.
@@ -91,7 +92,10 @@ channels. You'll want to use Simple and RGB as the value constructors
 in this new variant type.
 ......................................................................*)
 
-type color = NotImplemented ;;
+type color = 
+ |Simple of color_label
+ | RGB of int * int * int 
+ ;;
 
 (* Note that there is an important assumption about the RGB values
 that determine whether a color is valid or not. The RGB type contains
@@ -117,8 +121,15 @@ an Invalid_Color exception with a useful message.
 
 exception Invalid_Color of string ;;
 
-let valid_rgb = 
-  fun _ -> failwith "valid_rgb not implemented" ;;
+
+
+let valid_rgb (col : color) : color = 
+  let is_valid (num: int) : bool = num >= 0 && num <= 255 in
+  match col with
+  | Simple _ -> col 
+  | RGB (r, g, b) -> if (is_valid r) && (is_valid g) && (is_valid g) then col
+    else raise (Invalid_Color "invalid")
+   ;;
 
 (*......................................................................
 Exercise 3: Write a function, make_color, that accepts three integers
@@ -205,7 +216,11 @@ should be. Then, consider the implications of representing the overall
 data type as a tuple or a record.
 ......................................................................*)
 
-type date = NotImplemented ;;
+type date = {
+  day : int;
+  month : int;
+  year : int;
+} ;;
 
 (* After you've thought it through, look up the Date module in the
 OCaml documentation to see how this was implemented there. If you
@@ -221,13 +236,13 @@ day. If no changes are required...well, that was easy.
 Like the color type, above, the date object has invariants. In fact,
 the invariants for this type are more complex: we must ensure that
 "days" fall within an allowable range depending on the month, and even
-on the year.
+on the year. 
 
 The invariants are as follows:
 
 - For our purposes, we'll only support positive years.
 
-- January, March, May, July, August, October, and December have 31
+- January , March, May, July, August, October, and December have 31
   days.
 
 - April, June, September, and November have 30 days.
@@ -245,10 +260,29 @@ Exercise 9: Create a valid_date function that raises Invalid_Date if
 the invariant is violated, and returns the date if valid.
 ......................................................................*)
 
+type date = {
+  day : int;
+  month : int;
+  year : int;
+} ;;
+
+let is_valid_date (d : date ) : bool =
+    let is_leap (d : date ) : bool = if d.year mod 4 != 0 then false
+        else if d.year mod 100 != 0 then true 
+        else if d.year mod 400 != 0 then false
+        else true in
+    match d.month with
+    | 1,  3, 5, 7, 8, 10, 12 -> (d.day <= 31)
+    | 4, 6, 9, 11 -> (d.day <= 30)
+    | 2 -> if (is_leap d) && d.day <= 29 || (not is_leap) && <= 28 then true else false ;;
+
 exception Invalid_Date of string ;;
 
-let valid_date = 
-  fun _ -> failwith "valid_date not implemented" ;;
+
+let valid_date (d: date) : date = 
+  if not (is_valid_date d) then raise Invalid_Date ;;
+
+
 
 
 (*======================================================================
@@ -262,7 +296,11 @@ Exercise 10: Define a person record type. Use the field names "name",
 "favorite", and "birthdate".
 ......................................................................*)
 
-type person = NotImplemented ;;
+type person = {
+  name : string;
+  favorite : string;
+  birthday : date;
+} ;;
 
 (* Let's now do something with these person values. We'll create a
 data structure that allows us to model simple familial relationships.
